@@ -1,4 +1,4 @@
-import sqlite3, time, pyautogui
+import sqlite3, time, pyautogui, getpass, sys
 
 class MeetingDatabase:
     def __init__(self):
@@ -18,12 +18,22 @@ class MeetingDatabase:
         self.cur.execute('INSERT INTO Database (Subject, Day, Hour, IDMeeting, Password) VALUES (?, ?, ?, ?, ?)', (subject, day, hour, meeting, password))
         self.conn.commit()
 
-    def retrieveMeeting(self, day, hour):
-        self.cur.execute("SELECT IDMeeting, Password FROM Database WHERE Day='{}' AND Hour={} OR Hour={}+1".format(day, hour, hour,))
+    def retrieveMeeting(self, day, hour, minute):
+        self.cur.execute("SELECT IDMeeting, Password FROM Database WHERE Day='{}' AND (Hour={} OR Hour={}+1 AND {}>49)".format(day, hour, hour, minute))
         return self.cur.fetchone()
 
-    def deleteMeeting(self, day, hour):
-        self.cur.execute('DELETE FROM Database WHERE Day={} AND Hour={}'.format(day, hour,))
+    def deleteMeeting(self):
+        subject = input("Enter the subject that you want to delete: ").strip().title()
+        day = input("Enter the class day: ").strip().title()
+        hour = int(input("Enter the hour: "))
+        self.cur.execute(f"SELECT Subject FROM Database WHERE Subject='{subject}' AND Day='{day}' AND Hour={hour}")
+        if self.cur.fetchone() is None:
+            print("You have enter bad data. It's not in the database")
+        else:
+            self.cur.execute(f"DELETE FROM Database WHERE Subject='{subject}' AND Day='{day}' AND Hour={hour}")
+            self.conn.commit()
+            print("You have deleted the meeting")
+
 
 class EntryZoom:
     def __init__(self):
@@ -32,35 +42,87 @@ class EntryZoom:
     def get_time(self):
         self.current_time = time.ctime().split()
         self.day = self.current_time[0]
-        self.hour = self.current_time[3].split(":")[0]
-        return self.day, int(self.hour)
+        self.hour_min_sec = self.current_time[3].split(":")
+        return self.day, int(self.hour_min_sec[0]), int(self.hour_min_sec[1])
 
+    def robotic_arm(self, id, password):
+        pyautogui.press('win')
+        pyautogui.write('zoom')
+        pyautogui.press('enter')
+        time.sleep(2)
+        x, y = pyautogui.locateCenterOnScreen("button.png")
+        time.sleep(0.5)
+        pyautogui.click(x, y)
+        time.sleep(0.5)
+        pyautogui.write(id)
+        pyautogui.press('enter')
+        time.sleep(1)
+        pyautogui.write(password)
+        pyautogui.press('enter')
 
+def staying():
+    answer = input("Do you want to stay?(yes/no): ").strip().lower()
+    if answer == "yes" or answer == "y":
+        print("*"*40)
+        print("Welcome back.")
+    elif answer == "no" or answer == "n":
+        print("Until the next one")
+        sys.exit(0)
 
 def main():
+    # create the instances
     zoomDatabase = MeetingDatabase()
-    zoomDatabase.createTable()
-    zoomDatabase.addingMeeting()
     entry = EntryZoom()
-    day, hour = entry.get_time()
-    print(day)
-    id, password = zoomDatabase.retrieveMeeting(day, hour)
-    pyautogui.press('win')
-    pyautogui.write('zoom')
-    pyautogui.press('enter')
-    time.sleep(2)
-    x, y = pyautogui.locateCenterOnScreen("button.png")
-    time.sleep(0.5)
-    pyautogui.click(x, y)
-    time.sleep(0.5)
-    pyautogui.write(id)
-    pyautogui.press('enter')
-    time.sleep(1)
-    pyautogui.write(password)
-    pyautogui.press('enter')
-    zoomDatabase.cur.close()
+    while True:
+        print("1.Create Table")
+        print("2.Add Meetings")
+        print("3.Delete Meetings")
+        print("4.Go to class")
+        print("5.Exit")
+        print("*"*40)
+        answer = input("What do you want to do?(1-5): ")
 
-
+        if answer.strip() == "1":
+            zoomDatabase.createTable()
+            print("You have made a new table.")
+            staying()
+        elif answer.strip() == "2":
+            zoomDatabase.addingMeeting()
+            print("Meeting added to your database")
+            staying()
+        elif answer.strip() == "3":
+            zoomDatabase.deleteMeeting()
+            staying()
+        elif answer.strip() == "4":
+            day, hour, minute = entry.get_time()
+            meetid_password = zoomDatabase.retrieveMeeting(day, hour, minute)
+            if meetid_password is None:
+                print("This class doesn't exist. Check the data and remember that you can enter until 10 minutes before class.")
+            else:
+                id, password = meetid_password
+                entry.robotic_arm(id, password)
+            staying()
+        elif answer.strip() == "5":
+            print("Until the next one.")
+            zoomDatabase.cur.close()
+            break
+        else:
+            print("Invalid. Try again")
+            print("*"*40)
 
 if __name__ == '__main__':
-    main()
+    ADMIN_PASSWORD = "Bomb._Alf._456"
+    print("Welcome to your Zoom-Automation Manager")
+    print("*"*40)
+    try:
+        while True:
+            getpassword = getpass.getpass("Enter your main Password: ")
+            if getpassword == "Bomb._Alf._456":
+                main()
+                break
+            else:
+                print("Invalid access.\nTry again or press Ctrl-C to exit")
+                print("*"*40)
+
+    except KeyboardInterrupt:
+                print("\nUntil the next one")
