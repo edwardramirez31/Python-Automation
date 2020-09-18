@@ -126,4 +126,3 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
                 print("\nUntil the next one")
-                print("ward")
