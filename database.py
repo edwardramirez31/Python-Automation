@@ -111,7 +111,7 @@ def main():
             print("*"*40)
 
 if __name__ == '__main__':
-    ADMIN_PASSWORD = "Bomb._Alf._456"
+    ADMIN_PASSWORD = "CONTRASEÑA."
     print("Welcome to your Zoom-Automation Manager")
     print("*"*40)
     try:
@@ -126,4 +126,4 @@ if __name__ == '__main__':
 
     except KeyboardInterrupt:
                 print("\nUntil the next one")
-                print("wardiola")
+               
