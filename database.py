@@ -12,7 +12,7 @@ class MeetingDatabase:
     def addingMeeting(self):
         subject = input("Enter the subject: ").strip().title()
         day = input("Enter the class day: ").strip().title()
-        hour = int(input("Enter the class hour: ").strip().title())
+        hour = int(input("Enter the class hour: ").strip().title()
         meeting = input("Enter the Zoom ID-Meeting: ").strip().title()
         password = input("Enter the meeting password: ").strip().title()
         self.cur.execute('INSERT INTO Database (Subject, Day, Hour, IDMeeting, Password) VALUES (?, ?, ?, ?, ?)', (subject, day, hour, meeting, password))
@@ -117,7 +117,7 @@ if __name__ == '__main__':
     try:
         while True:
             getpassword = getpass.getpass("Enter your main Password: ")
-            if getpassword == "Bomb._Alf._456":
+            if getpassword == ADMIN_PASSWORD:
                 main()
                 break
             else:
