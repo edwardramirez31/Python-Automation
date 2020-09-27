@@ -111,7 +111,7 @@ def main():
             print("*"*40)
 
 if __name__ == '__main__':
-    ADMIN_PASSWORD = "CONTRASEÑA."
+    ADMIN_PASSWORD = "CONTRASEA."
     print("Welcome to your Zoom-Automation Manager")
     print("*"*40)
     try:
