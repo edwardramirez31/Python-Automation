@@ -34,6 +34,9 @@ class MeetingDatabase:
             self.conn.commit()
             print("You have deleted the meeting")
 
+class EntryMeet:
+    def __init__(self):
+        pass
 
 class EntryZoom:
     def __init__(self):
