@@ -111,13 +111,13 @@ def main():
             print("*"*40)
 
 if __name__ == '__main__':
-    ADMIN_PASSWORD = "Bomb._Alf._456"
+    ADMIN_PASSWORD = "CONTRASEÑA."
     print("Welcome to your Zoom-Automation Manager")
     print("*"*40)
     try:
         while True:
             getpassword = getpass.getpass("Enter your main Password: ")
-            if getpassword == "Bomb._Alf._456":
+            if getpassword == ADMIN_PASSWORD:
                 main()
                 break
             else:
