@@ -1,4 +1,9 @@
-import sqlite3, time, pyautogui, getpass, sys
+import sqlite3
+import time
+import pyautogui
+import getpass
+import sys
+
 
 class MeetingDatabase:
     def __init__(self):
@@ -7,7 +12,8 @@ class MeetingDatabase:
 
     def createTable(self):
         self.cur.execute('DROP TABLE IF EXISTS Database')
-        self.cur.execute('CREATE TABLE Database (Subject TEXT, Day TEXT, Hour INTEGER, IDMeeting TEXT, Password TEXT)')
+        self.cur.execute(
+            'CREATE TABLE Database (Subject TEXT, Day TEXT, Hour INTEGER, IDMeeting TEXT, Password TEXT)')
 
     def addingMeeting(self):
         subject = input("Enter the subject: ").strip().title()
@@ -15,28 +21,35 @@ class MeetingDatabase:
         hour = int(input("Enter the class hour: ").strip().title())
         meeting = input("Enter the Zoom ID-Meeting: ").strip().title()
         password = input("Enter the meeting password: ").strip().title()
-        self.cur.execute('INSERT INTO Database (Subject, Day, Hour, IDMeeting, Password) VALUES (?, ?, ?, ?, ?)', (subject, day, hour, meeting, password))
+        self.cur.execute('INSERT INTO Database (Subject, Day, Hour, IDMeeting, Password) VALUES (?, ?, ?, ?, ?)',
+                         (subject, day, hour, meeting, password))
         self.conn.commit()
 
     def retrieveMeeting(self, day, hour, minute):
-        self.cur.execute("SELECT IDMeeting, Password FROM Database WHERE Day='{}' AND (Hour={} OR Hour={}+1 AND {}>49)".format(day, hour, hour, minute))
+        self.cur.execute(
+            "SELECT IDMeeting, Password FROM Database WHERE Day='{}' AND (Hour={} OR Hour={}+1 AND {}>49)".format(day, hour, hour, minute))
         return self.cur.fetchone()
 
     def deleteMeeting(self):
-        subject = input("Enter the subject that you want to delete: ").strip().title()
+        subject = input(
+            "Enter the subject that you want to delete: ").strip().title()
         day = input("Enter the class day: ").strip().title()
         hour = int(input("Enter the hour: "))
-        self.cur.execute(f"SELECT Subject FROM Database WHERE Subject='{subject}' AND Day='{day}' AND Hour={hour}")
+        self.cur.execute(
+            f"SELECT Subject FROM Database WHERE Subject='{subject}' AND Day='{day}' AND Hour={hour}")
         if self.cur.fetchone() is None:
             print("You have enter bad data. It's not in the database")
         else:
-            self.cur.execute(f"DELETE FROM Database WHERE Subject='{subject}' AND Day='{day}' AND Hour={hour}")
+            self.cur.execute(
+                f"DELETE FROM Database WHERE Subject='{subject}' AND Day='{day}' AND Hour={hour}")
             self.conn.commit()
             print("You have deleted the meeting")
+
 
 class EntryMeet:
     def __init__(self):
         pass
+
 
 class EntryZoom:
     def __init__(self):
@@ -52,16 +65,21 @@ class EntryZoom:
         pyautogui.press('win')
         pyautogui.write('zoom')
         pyautogui.press('enter')
-        time.sleep(2)
-        x, y = pyautogui.locateCenterOnScreen("button.png")
+
+        coordinates = pyautogui.locateCenterOnScreen("button.png")
+        while coordinates is None:
+            coordinates = pyautogui.locateCenterOnScreen("button.png")
+        x, y = coordinates
+
         time.sleep(0.5)
         pyautogui.click(x, y)
         time.sleep(0.5)
         pyautogui.write(id)
         pyautogui.press('enter')
-        time.sleep(1)
+        time.sleep(1.5)
         pyautogui.write(password)
         pyautogui.press('enter')
+
 
 def staying():
     answer = input("Do you want to stay?(yes/no): ").strip().lower()
@@ -71,6 +89,7 @@ def staying():
     elif answer == "no" or answer == "n":
         print("Until the next one")
         sys.exit(0)
+
 
 def main():
     # create the instances
@@ -100,7 +119,8 @@ def main():
             day, hour, minute = entry.get_time()
             meetid_password = zoomDatabase.retrieveMeeting(day, hour, minute)
             if meetid_password is None:
-                print("This class doesn't exist. Check the data and remember that you can enter until 10 minutes before class.")
+                print(
+                    "This class doesn't exist. Check the data and remember that you can enter until 10 minutes before class.")
             else:
                 id, password = meetid_password
                 entry.robotic_arm(id, password)
@@ -112,6 +132,7 @@ def main():
         else:
             print("Invalid. Try again")
             print("*"*40)
+
 
 if __name__ == '__main__':
     ADMIN_PASSWORD = "CONTRASEA."
@@ -128,4 +149,4 @@ if __name__ == '__main__':
                 print("*"*40)
 
     except KeyboardInterrupt:
-                print("\nUntil the next one")
+        print("\nUntil the next one")
