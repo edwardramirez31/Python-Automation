@@ -104,10 +104,10 @@ class EntryZoom:
         pyautogui.press('enter')
 
     def meetEntry(self, url):
-        chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
-        webbrowser.get(chrome_path).open(url)
+        PATH = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+        webbrowser.get(PATH).open(url)
 
-        time.sleep(3)
+        time.sleep(3.5)
         # Para desactivar micrófono y cámara
         pyautogui.hotkey('ctrl', 'd')
         pyautogui.hotkey('ctrl', 'e')
