@@ -3,6 +3,9 @@ import time
 import pyautogui
 import getpass
 import sys
+import os
+from selenium import webdriver
+import webbrowser
 
 
 class MeetingDatabase:
@@ -18,9 +21,9 @@ class MeetingDatabase:
     def addingMeeting(self):
         subject = input("Enter the subject: ").strip().title()
         day = input("Enter the class day: ").strip().title()
-        hour = int(input("Enter the class hour: ").strip().title())
-        meeting = input("Enter the Zoom ID-Meeting: ").strip().title()
-        password = input("Enter the meeting password: ").strip().title()
+        hour = int(input("Enter the class hour: ").strip())
+        meeting = input("Enter the Zoom ID-Meeting: ").strip()
+        password = input("Enter the meeting password: ").strip()
         self.cur.execute('INSERT INTO Database (Subject, Day, Hour, IDMeeting, Password) VALUES (?, ?, ?, ?, ?)',
                          (subject, day, hour, meeting, password))
         self.conn.commit()
@@ -44,6 +47,26 @@ class MeetingDatabase:
                 f"DELETE FROM Database WHERE Subject='{subject}' AND Day='{day}' AND Hour={hour}")
             self.conn.commit()
             print("You have deleted the meeting")
+
+
+class MeetDatabase:
+    def __init__(self):
+        self.conn = sqlite3.connect('meetingdatabase.sqlite')
+        self.cur = self.conn.cursor()
+
+    def addingMeeting(self):
+        subject = input("Enter the subject: ").strip().title()
+        day = input("Enter the class day: ").strip().title()[:3]
+        hour = int(input("Enter the class hour: ").strip())
+        meeting = input("Enter the Meeting URL: ").strip()
+        self.cur.execute('INSERT INTO GoogleMeet (Subject, Day, Hour, MeetingURL) VALUES (?, ?, ?, ?)',
+                         (subject, day, hour, meeting))
+        self.conn.commit()
+
+    def retrieveMeetURL(self, day, hour, minute):
+        self.cur.execute(
+            'SELECT MeetingURL FROM GoogleMeet WHERE Day=? AND (Hour=? AND ?<50 OR (Hour=?+1 AND ?>49))', (day, hour, minute, hour, minute))
+        return self.cur.fetchone()
 
 
 class EntryMeet:
@@ -80,6 +103,25 @@ class EntryZoom:
         pyautogui.write(password)
         pyautogui.press('enter')
 
+    def meetEntry(self, url):
+        chrome_path = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
+        webbrowser.get(chrome_path).open(url)
+
+        time.sleep(3)
+        # Para desactivar micrófono y cámara
+        pyautogui.hotkey('ctrl', 'd')
+        pyautogui.hotkey('ctrl', 'e')
+        # Para ir al botón unirse
+        for i in range(6):
+            pyautogui.press('tab')
+        # Presionar el botón "Unirse"
+        pyautogui.press('enter')
+
+    def meetEntrySelenium(self, url):
+        PATH = os.getcwd() + "\\chromedriver.exe"
+        driver = webdriver.Chrome(PATH)
+        driver.get(url)
+
 
 def staying():
     answer = input("Do you want to stay?(yes/no): ").strip().lower()
@@ -95,27 +137,30 @@ def main():
     # create the instances
     zoomDatabase = MeetingDatabase()
     entry = EntryZoom()
+    googleMeet = MeetDatabase()
     while True:
         print("1.Create Table")
         print("2.Add Meetings")
         print("3.Delete Meetings")
         print("4.Go to class")
-        print("5.Exit")
+        print("5.Adding Meet URL")
+        print("6.Go to Meet Class")
+        print("7.Exit")
         print("*"*40)
-        answer = input("What do you want to do?(1-5): ")
+        answer = input("What do you want to do?(1-7): ").strip()
 
-        if answer.strip() == "1":
+        if answer == "1":
             zoomDatabase.createTable()
             print("You have made a new table.")
             staying()
-        elif answer.strip() == "2":
+        elif answer == "2":
             zoomDatabase.addingMeeting()
             print("Meeting added to your database")
             staying()
-        elif answer.strip() == "3":
+        elif answer == "3":
             zoomDatabase.deleteMeeting()
             staying()
-        elif answer.strip() == "4":
+        elif answer == "4":
             day, hour, minute = entry.get_time()
             meetid_password = zoomDatabase.retrieveMeeting(day, hour, minute)
             if meetid_password is None:
@@ -125,10 +170,24 @@ def main():
                 id, password = meetid_password
                 entry.robotic_arm(id, password)
             staying()
-        elif answer.strip() == "5":
+        elif answer == "7":
             print("Until the next one.")
             zoomDatabase.cur.close()
             break
+        elif answer == "5":
+
+            googleMeet.addingMeeting()
+
+        elif answer == "6":
+            day, hour, minute = entry.get_time()
+            meetURL = googleMeet.retrieveMeetURL(day, hour, minute)
+            if meetURL is None:
+                print(
+                    "This class doesn't exist. Check the data and remember that you can enter until 10 minutes before class.")
+            else:
+                entry.meetEntry(meetURL[0])
+            staying()
+
         else:
             print("Invalid. Try again")
             print("*"*40)
