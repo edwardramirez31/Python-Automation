@@ -4,7 +4,6 @@ import pyautogui
 import getpass
 import sys
 import os
-from selenium import webdriver
 import webbrowser
 
 
