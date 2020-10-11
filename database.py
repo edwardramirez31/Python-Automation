@@ -19,14 +19,17 @@ class MeetingDatabase:
             'CREATE TABLE Database (Subject TEXT, Day TEXT, Hour INTEGER, IDMeeting TEXT, Password TEXT)')
 
     def addingMeeting(self):
-        subject = input("Enter the subject: ").strip().title()
-        day = input("Enter the class day: ").strip().title()
-        hour = int(input("Enter the class hour: ").strip())
-        meeting = input("Enter the Zoom ID-Meeting: ").strip()
-        password = input("Enter the meeting password: ").strip()
-        self.cur.execute('INSERT INTO Database (Subject, Day, Hour, IDMeeting, Password) VALUES (?, ?, ?, ?, ?)',
-                         (subject, day, hour, meeting, password))
-        self.conn.commit()
+        try:
+            subject = input("Enter the subject: ").strip().title()
+            day = input("Enter the class day: ").strip().title()[:3]
+            hour = int(input("Enter the class hour: ").strip())
+            meeting = input("Enter the Zoom ID-Meeting: ").strip()
+            password = input("Enter the meeting password: ").strip()
+            self.cur.execute('INSERT INTO Database (Subject, Day, Hour, IDMeeting, Password) VALUES (?, ?, ?, ?, ?)',
+                             (subject, day, hour, meeting, password))
+            self.conn.commit()
+        except ValueError:
+            print("Put the correct Values")
 
     def retrieveMeeting(self, day, hour, minute):
         self.cur.execute(
@@ -34,19 +37,22 @@ class MeetingDatabase:
         return self.cur.fetchone()
 
     def deleteMeeting(self):
-        subject = input(
-            "Enter the subject that you want to delete: ").strip().title()
-        day = input("Enter the class day: ").strip().title()
-        hour = int(input("Enter the hour: "))
-        self.cur.execute(
-            f"SELECT Subject FROM Database WHERE Subject='{subject}' AND Day='{day}' AND Hour={hour}")
-        if self.cur.fetchone() is None:
-            print("You have enter bad data. It's not in the database")
-        else:
+        try:
+            subject = input(
+                "Enter the subject that you want to delete: ").strip().title()
+            day = input("Enter the class day: ").strip().title()[:3]
+            hour = int(input("Enter the hour: "))
             self.cur.execute(
-                f"DELETE FROM Database WHERE Subject='{subject}' AND Day='{day}' AND Hour={hour}")
-            self.conn.commit()
-            print("You have deleted the meeting")
+                f"SELECT Subject FROM Database WHERE Subject='{subject}' AND Day='{day}' AND Hour={hour}")
+            if self.cur.fetchone() is None:
+                print("You have enter bad data. It's not in the database")
+            else:
+                self.cur.execute(
+                    f"DELETE FROM Database WHERE Subject='{subject}' AND Day='{day}' AND Hour={hour}")
+                self.conn.commit()
+                print("You have deleted the meeting")
+        except ValueError:
+            print("Put the data in the right form")
 
 
 class MeetDatabase:
@@ -55,23 +61,21 @@ class MeetDatabase:
         self.cur = self.conn.cursor()
 
     def addingMeeting(self):
-        subject = input("Enter the subject: ").strip().title()
-        day = input("Enter the class day: ").strip().title()[:3]
-        hour = int(input("Enter the class hour: ").strip())
-        meeting = input("Enter the Meeting URL: ").strip()
-        self.cur.execute('INSERT INTO GoogleMeet (Subject, Day, Hour, MeetingURL) VALUES (?, ?, ?, ?)',
-                         (subject, day, hour, meeting))
-        self.conn.commit()
+        try:
+            subject = input("Enter the subject: ").strip().title()
+            day = input("Enter the class day: ").strip().title()[:3]
+            hour = int(input("Enter the class hour: ").strip())
+            meeting = input("Enter the Meeting URL: ").strip()
+            self.cur.execute('INSERT INTO GoogleMeet (Subject, Day, Hour, MeetingURL) VALUES (?, ?, ?, ?)',
+                             (subject, day, hour, meeting))
+            self.conn.commit()
+        except ValueError:
+            print("Put the data in its correct form")
 
     def retrieveMeetURL(self, day, hour, minute):
         self.cur.execute(
             'SELECT MeetingURL FROM GoogleMeet WHERE Day=? AND (Hour=? AND ?<50 OR (Hour=?+1 AND ?>49))', (day, hour, minute, hour, minute))
         return self.cur.fetchone()
-
-
-class EntryMeet:
-    def __init__(self):
-        pass
 
 
 class EntryZoom:
@@ -92,10 +96,10 @@ class EntryZoom:
         coordinates = pyautogui.locateCenterOnScreen("button.png")
         while coordinates is None:
             coordinates = pyautogui.locateCenterOnScreen("button.png")
-        x, y = coordinates
+        # x, y = coordinates
 
-        time.sleep(0.5)
-        pyautogui.click(x, y)
+        # time.sleep(0.5)
+        pyautogui.click(coordinates)
         time.sleep(0.5)
         pyautogui.write(id)
         pyautogui.press('enter')
@@ -105,8 +109,7 @@ class EntryZoom:
 
     def meetEntry(self, url):
         PATH = 'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe %s'
-        webbrowser.get(PATH).open(url)
-
+        webbrowser.get(PATH).open_new(url)
         time.sleep(3.5)
         # Para desactivar micrófono y cámara
         pyautogui.hotkey('ctrl', 'd')
