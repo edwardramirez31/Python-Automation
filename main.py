@@ -5,6 +5,7 @@ import getpass
 import sys
 import os
 import webbrowser
+pyautogui.FAILSAFE = False
 
 
 class MeetingDatabase:
@@ -15,24 +16,51 @@ class MeetingDatabase:
     def createTable(self):
         self.cur.execute('DROP TABLE IF EXISTS Database')
         self.cur.execute(
-            'CREATE TABLE Database (Subject TEXT, Day TEXT, Hour INTEGER, IDMeeting TEXT, Password TEXT)')
+            '''CREATE TABLE Database (Subject TEXT, Day TEXT, 
+            Hour INTEGER, IDMeeting TEXT, Password TEXT) ''')
 
-    def addingMeeting(self):
+    def gettingValues(self):
+
         try:
-            subject = input("Enter the subject: ").strip().title()
-            day = input("Enter the class day: ").strip().title()[:3]
-            hour = int(input("Enter the class hour: ").strip())
-            meeting = input("Enter the Zoom ID-Meeting: ").strip()
-            password = input("Enter the meeting password: ").strip()
-            self.cur.execute('INSERT INTO Database (Subject, Day, Hour, IDMeeting, Password) VALUES (?, ?, ?, ?, ?)',
-                             (subject, day, hour, meeting, password))
-            self.conn.commit()
+            self.subject = input("Enter the subject: ").strip().title()
+            self.day = input("Enter the class day: ").strip().title()[:3]
+            self.digitalHour = input("Enter the class hour: ").split(':')
+            self.classLength = input("Enter the Class Length: ").strip()
+            self.hour = int(self.digitalHour[0])
+
+            try:
+                self.minute = int(self.digitalHour[1])
+            except ValueError:
+                self.minute = int(self.digitalHour[1][1])
+            if self.minute <= 10:
+                self.minMinute = 50 + self.minute
+                self.maxMinute = self.minMinute - 1
+                self.minHour = self.hour - 1
+                self.maxHour = self.hour + int(self.classLength) - 1
+            else:
+                self.minMinute = self.minute - 10
+                self.maxMinute = self.minMinute - 1
+                self.minHour = self.hour
+                self.maxHour = self.hour + int(self.classLength)
         except ValueError:
             print("Put the correct Values")
 
-    def retrieveMeeting(self, day, hour, minute):
+    def addingToZoomDatabase(self):
+        meeting = input("Enter the Zoom ID-Meeting: ").strip()
+        password = input("Enter the meeting password: ").strip()
+        self.cur.execute('''INSERT INTO ZoomDatabase (materia, dia, 
+        hora, minuto, horaMinima, horaMaxima, minutoMin, minutoMax, 
+        IDMeeting, Password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                         (self.subject, self.day, self.hour, self.minute,
+                          self.minHour, self.maxHour, self.minMinute,
+                          self.maxMinute, meeting, password))
+        self.conn.commit()
+
+    def retrieveZoomMeeting(self, day, hour, minute):
         self.cur.execute(
-            "SELECT IDMeeting, Password FROM Database WHERE Day='{}' AND (Hour={} OR Hour={}+1 AND {}>49)".format(day, hour, hour, minute))
+            """SELECT IDMeeting, Password FROM ZoomDatabase WHERE dia='{}' 
+            AND (hora={} OR (horaMinima={} AND {}>=minutoMin) OR 
+            (horaMaxima={} AND minutoMax>={}))""".format(day, hour, hour, minute, hour, minute))
         return self.cur.fetchone()
 
     def deleteMeeting(self):
@@ -53,31 +81,23 @@ class MeetingDatabase:
         except ValueError:
             print("Put the data in the right form")
 
+    def addingToMeetDatabase(self):
+        url = input("Enter the URL meeting: ").strip()
+        self.cur.execute('''INSERT INTO MeetDatabase (materia, 
+        dia, hora, minuto, horaMinima, horaMaxima, minutoMin, 
+        minutoMax, url) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                         (self.subject, self.day, self.hour, self.minute, self.minHour,
+                          self.maxHour, self.minMinute, self.maxMinute, url))
+        self.conn.commit()
 
-class MeetDatabase:
-    def __init__(self):
-        self.conn = sqlite3.connect('meetingdatabase.sqlite')
-        self.cur = self.conn.cursor()
-
-    def addingMeeting(self):
-        try:
-            subject = input("Enter the subject: ").strip().title()
-            day = input("Enter the class day: ").strip().title()[:3]
-            hour = int(input("Enter the class hour: ").strip())
-            meeting = input("Enter the Meeting URL: ").strip()
-            self.cur.execute('INSERT INTO GoogleMeet (Subject, Day, Hour, MeetingURL) VALUES (?, ?, ?, ?)',
-                             (subject, day, hour, meeting))
-            self.conn.commit()
-        except ValueError:
-            print("Put the data in its correct form")
-
-    def retrieveMeetURL(self, day, hour, minute):
-        self.cur.execute(
-            'SELECT MeetingURL FROM GoogleMeet WHERE Day=? AND (Hour=? AND ?<50 OR (Hour=?+1 AND ?>49))', (day, hour, minute, hour, minute))
+    def retrieveGoogleMeet(self, day, hour, minute):
+        self.cur.execute('''SELECT url FROM MeetDatabase WHERE dia='{}' 
+        AND (hora={} OR (horaMinima={} AND {}>=minutoMin) OR 
+        (horaMaxima={} AND minutoMax>={}))'''.format(day, hour, hour, minute, hour, minute))
         return self.cur.fetchone()
 
 
-class EntryZoom:
+class GoToClass:
     def __init__(self):
         pass
 
@@ -121,8 +141,8 @@ class EntryZoom:
 
     def meetEntrySelenium(self, url):
         PATH = os.getcwd() + "\\chromedriver.exe"
-        driver = webdriver.Chrome(PATH)
-        driver.get(url)
+        # driver = webdriver.Chrome(PATH)
+        # driver.get(url)
 
 
 def staying():
@@ -138,14 +158,14 @@ def staying():
 def main():
     # create the instances
     zoomDatabase = MeetingDatabase()
-    entry = EntryZoom()
-    googleMeet = MeetDatabase()
+    entry = GoToClass()
+    googleMeet = MeetingDatabase()
     while True:
         print("1.Create Table")
-        print("2.Add Meetings")
-        print("3.Delete Meetings")
-        print("4.Go to class")
-        print("5.Adding Meet URL")
+        print("2.Add a Zoom Meeting")
+        print("3.Delete a Zoom Meeting")
+        print("4.Go to Zoom Class")
+        print("5.Adding Google Meet URL")
         print("6.Go to Meet Class")
         print("7.Exit")
         print("*"*40)
@@ -156,7 +176,8 @@ def main():
             print("You have made a new table.")
             staying()
         elif answer == "2":
-            zoomDatabase.addingMeeting()
+            zoomDatabase.gettingValues()
+            zoomDatabase.addingToZoomDatabase()
             print("Meeting added to your database")
             staying()
         elif answer == "3":
@@ -164,7 +185,8 @@ def main():
             staying()
         elif answer == "4":
             day, hour, minute = entry.get_time()
-            meetid_password = zoomDatabase.retrieveMeeting(day, hour, minute)
+            meetid_password = zoomDatabase.retrieveZoomMeeting(
+                day, hour, minute)
             if meetid_password is None:
                 print(
                     "This class doesn't exist. Check the data and remember that you can enter until 10 minutes before class.")
@@ -172,23 +194,26 @@ def main():
                 id, password = meetid_password
                 entry.robotic_arm(id, password)
             staying()
-        elif answer == "7":
-            print("Until the next one.")
-            zoomDatabase.cur.close()
-            break
-        elif answer == "5":
 
-            googleMeet.addingMeeting()
+        elif answer == "5":
+            googleMeet.gettingValues()
+            googleMeet.addingToMeetDatabase()
+            staying()
 
         elif answer == "6":
             day, hour, minute = entry.get_time()
-            meetURL = googleMeet.retrieveMeetURL(day, hour, minute)
+            meetURL = googleMeet.retrieveGoogleMeet(day, hour, minute)
             if meetURL is None:
                 print(
                     "This class doesn't exist. Check the data and remember that you can enter until 10 minutes before class.")
             else:
                 entry.meetEntry(meetURL[0])
             staying()
+
+        elif answer == "7":
+            print("Until the next one.")
+            zoomDatabase.cur.close()
+            break
 
         else:
             print("Invalid. Try again")
