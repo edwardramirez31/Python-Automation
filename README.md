@@ -9,7 +9,7 @@
 2. Download the ZIP file:
    <img src="images/downloadZip.png"/>
 
-3. Unzip the file and put the folder content in your User Folder
+3. Unzip the file and put the folder content **(each file within the unziped folder)** in your **User Folder**
 
    - Tipically, in Windows the User folder follows the Path "C:\Users\\{YourUserNameHere}"
 
