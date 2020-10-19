@@ -11,7 +11,7 @@
 
 3. Unzip the file and put the folder content in your User Folder
 
-   - Tipically, in Windows the User folder follows the Path "C:\Users\{YourUserNameHere}"
+   - Tipically, in Windows the User folder follows the Path "C:\Users\\{YourUserNameHere}"
 
 4. Set the Zoom audio and video configuration:
    <img src="images/configuration.png"/>
