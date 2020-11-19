@@ -1,7 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QMessageBox, QFormLayout, QGroupBox
+from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAction, QTabWidget, QVBoxLayout, QMessageBox, QFormLayout, QGroupBox, QLineEdit, QSpinBox, QComboBox, QTimeEdit
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import QTime
 from main import GoToClass, MeetingDatabase
 
 
@@ -51,8 +51,50 @@ class MyTableWidget(QWidget):
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
 
+        self.add_meeting_form()
         self.initial_settings()
-        self.go_to_class()
+
+    def add_meeting_form(self):
+        self.days = {
+            "Lunes": "Mon",
+            "Martes": "Tue",
+            "Miércoles": "Wed",
+            "Jueves": "Thu",
+            "Viernes": "Fri",
+            "Sábado": "Sat"}
+        # Meeting group data
+        self.group_box = QGroupBox("Datos de la reunión")
+        form_layout = QFormLayout()
+        form_layout.addRow("Name:", QLineEdit())
+        form_layout.addRow("ID de la reunión:", QLineEdit())
+        form_layout.addRow("Password", QLineEdit())
+        self.group_box.setLayout(form_layout)
+
+        # Date grou data
+        self.group_box2 = QGroupBox("Fecha y Hora")
+        form_layout2 = QFormLayout()
+
+        # ComboBox for the days
+        self.combo_days = QComboBox()
+        self.combo_days.addItems(self.days.keys())
+        form_layout2.addRow("Seleccione el día:", self.combo_days)
+        # Widget used to get the hour
+        self.time_edit = QTimeEdit()
+        self.time_edit.setTime(QTime.currentTime())
+        self.time_edit.setDisplayFormat("HH:mm")
+        # https://codetorial.net/en/pyqt5/widget/qtimeedit.html
+        form_layout2.addRow("Seleccione la hora:", self.time_edit)
+        # Widget used to get the class length
+        self.hours = QSpinBox()
+        self.hours.setMaximum(20)
+        form_layout2.addRow("Duración (horas)", self.hours)
+        self.group_box2.setLayout(form_layout2)
+
+        # Tab2 Main Layout
+        self.tab2_layout = QVBoxLayout()
+        self.tab2_layout.addWidget(self.group_box)
+        self.tab2_layout.addWidget(self.group_box2)
+        self.tab2.setLayout(self.tab2_layout)
 
     def initial_settings(self):
         self.entry = GoToClass()
