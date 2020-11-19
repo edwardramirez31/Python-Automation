@@ -60,10 +60,12 @@ class MeetingDatabase:
         self.conn.commit()
 
     def retrieveZoomMeeting(self, day, hour, minute):
-        self.cur.execute(
-            """SELECT IDMeeting, Password FROM ZoomDatabase WHERE dia='{}' 
-            AND (hora={} OR (horaMinima={} AND {}>=minutoMin) OR 
-            (horaMaxima={} AND minutoMax>={}))""".format(day, hour, hour, minute, hour, minute))
+        self.cur.execute("""SELECT IDMeeting, Password FROM ZoomDatabase WHERE dia='{}' 
+            AND ((hora<={} AND {}<horaMaxima) OR (horaMinima={} AND {}>=minutoMin) OR 
+            (horaMaxima={} AND minutoMax>={}))""".format(day, hour, hour, hour, minute, hour, minute))
+        # """SELECT IDMeeting, Password FROM ZoomDatabase WHERE dia='{}'
+        # AND (hora={} OR (horaMinima={} AND {}>=minutoMin) OR
+        # (horaMaxima={} AND minutoMax>={}))"""
         return self.cur.fetchone()
 
     def deleteMeeting(self):
@@ -113,22 +115,22 @@ class GoToClass:
         return self.day, int(self.hour_min_sec[0]), int(self.hour_min_sec[1])
 
     def robotic_arm(self, id, password):
-        pyautogui.press('win')
-        pyautogui.write('zoom')
-        pyautogui.press('enter')
+        pyautogui.press('win', interval=0.5)
+        pyautogui.write('zoom', interval=0.5)
+        pyautogui.press('enter', interval=0.5)
 
-        coordinates = pyautogui.locateCenterOnScreen("button.png")
+        coordinates = pyautogui.locateCenterOnScreen("icon1.png")
         while coordinates is None:
-            coordinates = pyautogui.locateCenterOnScreen("button.png")
+            coordinates = pyautogui.locateCenterOnScreen("icon1.png")
         # x, y = coordinates
 
         # time.sleep(0.5)
-        pyautogui.click(coordinates)
+        pyautogui.click(coordinates, interval=1)
         time.sleep(1)
-        pyautogui.write(id)
-        pyautogui.press('enter')
+        pyautogui.write(id, interval=0.5)
+        pyautogui.press('enter', interval=0.5)
         time.sleep(2.5)
-        pyautogui.write(password)
+        pyautogui.write(password, interval=0.5)
         pyautogui.press('enter')
 
     def meetEntry(self, url):
