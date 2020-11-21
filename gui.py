@@ -62,39 +62,59 @@ class MyTableWidget(QWidget):
             "Jueves": "Thu",
             "Viernes": "Fri",
             "Sábado": "Sat"}
+
+        self.widgets_group_1 = {
+            "Materia": QLineEdit(),
+            "ID de la reunión": QLineEdit(),
+            "Password": QLineEdit()
+        }
         # Meeting group data
         self.group_box = QGroupBox("Datos de la reunión")
         form_layout = QFormLayout()
-        form_layout.addRow("Name:", QLineEdit())
-        form_layout.addRow("ID de la reunión:", QLineEdit())
-        form_layout.addRow("Password", QLineEdit())
+        for name, widget in self.widgets_group_1.items():
+            form_layout.addRow(name, widget)
+
         self.group_box.setLayout(form_layout)
 
         # Date grou data
+        self.widgets_group_2 = {
+            "Seleccione un día": QComboBox(),
+            "Seleccione la hora": QTimeEdit(),
+            "Duración (horas)": QSpinBox()
+        }
         self.group_box2 = QGroupBox("Fecha y Hora")
         form_layout2 = QFormLayout()
+        self.group_box2.setLayout(form_layout2)
+
+        for name, widget in self.widgets_group_2.items():
+            form_layout2.addRow(name, widget)
 
         # ComboBox for the days
-        self.combo_days = QComboBox()
-        self.combo_days.addItems(self.days.keys())
-        form_layout2.addRow("Seleccione el día:", self.combo_days)
-        # Widget used to get the hour
-        self.time_edit = QTimeEdit()
-        self.time_edit.setTime(QTime.currentTime())
-        self.time_edit.setDisplayFormat("HH:mm")
+        self.widgets_group_2["Seleccione un día"].addItems(self.days.keys())
+        self.widgets_group_2["Seleccione la hora"].setTime(QTime.currentTime())
+        self.widgets_group_2["Seleccione la hora"].setDisplayFormat("HH:mm")
+
         # https://codetorial.net/en/pyqt5/widget/qtimeedit.html
-        form_layout2.addRow("Seleccione la hora:", self.time_edit)
-        # Widget used to get the class length
-        self.hours = QSpinBox()
-        self.hours.setMaximum(20)
-        form_layout2.addRow("Duración (horas)", self.hours)
-        self.group_box2.setLayout(form_layout2)
 
         # Tab2 Main Layout
         self.tab2_layout = QVBoxLayout()
         self.tab2_layout.addWidget(self.group_box)
         self.tab2_layout.addWidget(self.group_box2)
         self.tab2.setLayout(self.tab2_layout)
+
+        self.get_values_button = QPushButton("Submit")
+        self.get_values_button.clicked.connect(self.get_values)
+        self.tab2_layout.addWidget(self.get_values_button)
+
+    def get_values(self):
+        self.values = list()
+        for widget in self.widgets_group_1.values():
+            self.values.append(widget.text())
+        self.day = self.widgets_group_2["Seleccione un día"].currentText()
+        self.hour = self.widgets_group_2["Seleccione la hora"].time(
+        ).toString()
+        self.length = self.widgets_group_2["Duración (horas)"].value()
+        print(self.day, self.hour, self.length, self.values)
 
     def initial_settings(self):
         self.entry = GoToClass()
