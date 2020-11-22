@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QMainWindow, QApplication, QPushButton, QWidget, QAc
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QTime
 from main import GoToClass, MeetingDatabase
+import sqlite3
 
 
 class App(QMainWindow):
@@ -111,10 +112,32 @@ class MyTableWidget(QWidget):
         for widget in self.widgets_group_1.values():
             self.values.append(widget.text())
         self.day = self.widgets_group_2["Seleccione un día"].currentText()
-        self.hour = self.widgets_group_2["Seleccione la hora"].time(
+        self.hour_String = self.widgets_group_2["Seleccione la hora"].time(
         ).toString()
         self.length = self.widgets_group_2["Duración (horas)"].value()
-        print(self.day, self.hour, self.length, self.values)
+        self.time_handler()
+
+    def time_handler(self):
+        self.hour_list = self.hour_String.split(":")
+        self.hour = self.hour_list[0]
+        try:
+            self.minute = int(self.hour_list[1])
+            self.hour = int(self.hour_list[0])
+        except ValueError:
+            self.minute = int(self.hour_list[1][1])
+            self.hour = int(self.hour_list[0][1])
+
+        if self.minute <= 10:
+            self.minMinute = 50 + self.minute
+            self.maxMinute = self.minMinute - 1
+            self.minHour = self.hour - 1
+            self.maxHour = self.hour + int(self.length) - 1
+        else:
+            self.minMinute = self.minute - 10
+            self.maxMinute = self.minMinute - 1
+            self.minHour = self.hour
+            self.maxHour = self.hour + int(self.length)
+        self.add_meeting_zoom()
 
     def initial_settings(self):
         self.entry = GoToClass()
@@ -131,8 +154,22 @@ class MyTableWidget(QWidget):
             id, password = meetid_password
             self.entry.robotic_arm(id, password)
 
+    def add_meeting_zoom(self):
+        print("ward")
+        self.conn = sqlite3.connect('meetingdatabase.sqlite')
+        self.cur = self.conn.cursor()
+        self.cur.execute('''INSERT INTO ZoomDatabase (materia, dia, 
+        hora, minuto, horaMinima, horaMaxima, minutoMin, minutoMax, 
+        IDMeeting, Password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)''',
+                         (self.values[0], self.days[self.day], self.hour, self.minute,
+                          self.minHour, self.maxHour, self.minMinute,
+                          self.maxMinute, self.values[1], self.values[2]))
+        self.conn.commit()
+        self.cur.close()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = App()
+    # control = Controller(window)
     sys.exit(app.exec_())
