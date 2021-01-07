@@ -116,21 +116,48 @@ class GoToClass:
 
     def robotic_arm(self, id, password):
         pyautogui.press('win', interval=0.5)
-        pyautogui.write('zoom', interval=0.5)
+        pyautogui.write('zoom')
         pyautogui.press('enter', interval=0.5)
 
-        coordinates = pyautogui.locateCenterOnScreen("icon1.png")
-        while coordinates is None:
-            coordinates = pyautogui.locateCenterOnScreen("icon1.png")
+        coordinates1 = pyautogui.locateCenterOnScreen("icon1.png")
+        coordinates2 = pyautogui.locateCenterOnScreen("icon2.png")
+        coordinates3 = pyautogui.locateCenterOnScreen("icon3.png")
+        coordinates4 = pyautogui.locateCenterOnScreen("icon4.png")
+        while True:
+            if not coordinates1 is None:
+                coordinates = coordinates1
+                print("coordinates 1")
+
+                break
+            if not coordinates2 is None:
+                coordinates = coordinates2
+                print("coordinates 2")
+                break
+
+            if not coordinates3 is None:
+                coordinates = coordinates3
+                print("coordinates 3")
+                break
+
+            if not coordinates4 is None:
+                coordinates = coordinates4
+                print("coordinates 4")
+                break
+
+            coordinates1 = pyautogui.locateCenterOnScreen("icon1.png")
+            coordinates2 = pyautogui.locateCenterOnScreen("icon2.png")
+            coordinates3 = pyautogui.locateCenterOnScreen("icon3.png")
+            coordinates4 = pyautogui.locateCenterOnScreen("icon4.png")
+
         # x, y = coordinates
 
         # time.sleep(0.5)
         pyautogui.click(coordinates, interval=1)
         time.sleep(1)
-        pyautogui.write(id, interval=0.5)
+        pyautogui.write(id)
         pyautogui.press('enter', interval=0.5)
         time.sleep(2.5)
-        pyautogui.write(password, interval=0.5)
+        pyautogui.write(password)
         pyautogui.press('enter')
 
     def meetEntry(self, url):
