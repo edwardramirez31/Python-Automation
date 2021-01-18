@@ -1,7 +1,6 @@
 import sqlite3
 import time
 import pyautogui
-# import getpass
 import sys
 import os
 import webbrowser
@@ -119,41 +118,23 @@ class GoToClass:
         pyautogui.write('zoom')
         pyautogui.press('enter', interval=0.5)
 
-        coordinates1 = pyautogui.locateCenterOnScreen("icon1.png")
+        coordinates1 = pyautogui.locateCenterOnScreen("icon.png")
         coordinates2 = pyautogui.locateCenterOnScreen("icon2.png")
-        coordinates3 = pyautogui.locateCenterOnScreen("icon3.png")
-        coordinates4 = pyautogui.locateCenterOnScreen("icon4.png")
         while True:
             if not coordinates1 is None:
                 coordinates = coordinates1
-                print("coordinates 1")
-
                 break
+
             if not coordinates2 is None:
                 coordinates = coordinates2
-                print("coordinates 2")
                 break
 
-            if not coordinates3 is None:
-                coordinates = coordinates3
-                print("coordinates 3")
-                break
-
-            if not coordinates4 is None:
-                coordinates = coordinates4
-                print("coordinates 4")
-                break
-
-            coordinates1 = pyautogui.locateCenterOnScreen("icon1.png")
+            coordinates1 = pyautogui.locateCenterOnScreen("icon.png")
             coordinates2 = pyautogui.locateCenterOnScreen("icon2.png")
-            coordinates3 = pyautogui.locateCenterOnScreen("icon3.png")
-            coordinates4 = pyautogui.locateCenterOnScreen("icon4.png")
 
-        # x, y = coordinates
 
-        # time.sleep(0.5)
         pyautogui.click(coordinates, interval=1)
-        time.sleep(1)
+        time.sleep(2)
         pyautogui.write(id)
         pyautogui.press('enter', interval=0.5)
         time.sleep(2.5)
@@ -278,19 +259,7 @@ def main():
 
 
 if __name__ == '__main__':
-    # ADMIN_PASSWORD = "CONTRASEA."
     print("Welcome to your Zoom-Automation Manager")
     print("*"*40)
     main()
-    # try:
-    # while True:
-    #     getpassword = getpass.getpass("Enter your main Password: ")
-    #     if getpassword == ADMIN_PASSWORD:
-    #         main()
-    #         break
-    #     else:
-    #         print("Invalid access.\nTry again or press Ctrl-C to exit")
-    #         print("*"*40)
-
-    # except KeyboardInterrupt:
-    #     print("\nUntil the next one")
+    

@@ -50,7 +50,7 @@ class MyTableWidget(QWidget):
         self.pushButton1.clicked.connect(self.go_to_class)
 
         labelImage = QLabel(self)
-        pixmap = QPixmap("logo21.png")
+        pixmap = QPixmap("logo.png")
         labelImage.setPixmap(pixmap)
 
         self.tab1_layout.addWidget(labelImage)
