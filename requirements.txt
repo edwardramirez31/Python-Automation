@@ -1,1 +1,3 @@
 PyAutoGUI==0.9.50
+QDarkStyle==2.8.1
+PyQt5==5.15.0
